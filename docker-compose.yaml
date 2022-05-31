@@ -1,0 +1,67 @@
+version: "3.7"
+services:
+  rabbitmq:
+    container_name: rabbitmq
+    hostname: rabbitmq
+    image: rabbitmq:3-management-alpine
+    ports:
+      - 5672:5672
+      - 15672:15672
+    healthcheck:
+      test: rabbitmq-diagnostics -q check_port_connectivity
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    volumes:
+      - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
+      - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
+    networks:
+      - rabbitnet
+  player1:
+    container_name: player1
+    hostname: player1
+    image: mduhovniy/game-of-three:latest
+    environment:
+      - SERVER_PORT=8081
+      - INSTANCE_ID=1
+    ports:
+      - 8081:8081
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+#    networks:
+#      - rabbitnet
+    network_mode: host
+  player2:
+    container_name: player2
+    hostname: player2
+    image: mduhovniy/game-of-three:latest
+    environment:
+      - SERVER_PORT=8082
+      - INSTANCE_ID=2
+    ports:
+      - 8082:8082
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+#    networks:
+#      - rabbitnet
+    network_mode: host
+  orchestrator:
+    container_name: orchestrator
+    hostname: orchestrator
+    image: mduhovniy/game-of-three:latest
+    environment:
+      - SERVER_PORT=8083
+      - INSTANCE_COUNT=2
+    ports:
+      - 8083:8083
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+    #    networks:
+    #      - rabbitnet
+    network_mode: host
+networks:
+  rabbitnet:
+    driver: bridge

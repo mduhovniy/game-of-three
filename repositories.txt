@@ -1,0 +1,2 @@
+https://github.com/mduhovniy/game-of-three-player.git
+https://github.com/mduhovniy/game-of-three-referee.git
